@@ -663,7 +663,7 @@ bool AsyncMqttClient::_sendDisconnect() {
 
   _client.add(fixedHeader, 2);
   _client.send();
-  _client.close();
+  _client.close(true);
 
   _disconnectFlagged = false;
 
