@@ -171,6 +171,8 @@ void AsyncMqttClient::_clear() {
 
   _nextPacketId = 1;
   _parsingInformation.bufferState = AsyncMqttClientInternals::BufferState::NONE;
+
+  _client.setRxTimeout(0);
 }
 
 /* TCP */
@@ -347,6 +349,7 @@ void AsyncMqttClient::_onConnect(AsyncClient* client) {
     _client.add(passwordLengthBytes, 2);
     _client.add(_password, passwordLength);
   }
+  _client.setRxTimeout(10);
   _client.send();
   _lastClientActivity = millis();
   SEMAPHORE_GIVE();
@@ -402,6 +405,7 @@ void AsyncMqttClient::_onData(AsyncClient* client, char* data, size_t len) {
         switch (_parsingInformation.packetType) {
           case AsyncMqttClientInternals::PacketType.CONNACK:
             _currentParsedPacket = new AsyncMqttClientInternals::ConnAckPacket(&_parsingInformation, std::bind(&AsyncMqttClient::_onConnAck, this, std::placeholders::_1, std::placeholders::_2));
+            client->setRxTimeout(0);
             break;
           case AsyncMqttClientInternals::PacketType.PINGRESP:
             _currentParsedPacket = new AsyncMqttClientInternals::PingRespPacket(&_parsingInformation, std::bind(&AsyncMqttClient::_onPingResp, this));
